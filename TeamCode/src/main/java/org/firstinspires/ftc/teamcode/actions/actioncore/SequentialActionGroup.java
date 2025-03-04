@@ -11,26 +11,33 @@ public class SequentialActionGroup extends Action {
     private int toleranceRange = 100;
     private SuperStructure upper;
     //Params not in super class
-    private Action[] actions;
+    private Action[] sequentialActions;
+    private Action parent = new Action();
     private Action currentAction;
     private Runnable update;
 
-    public SequentialActionGroup(Runnable update, Action...actions){
+    public SequentialActionGroup(Runnable update, Action...sequentialActions){
         this.update = update;
-        this.actions = actions;
+        this.sequentialActions = sequentialActions;
+    }
+
+    public SequentialActionGroup( Action parent, Runnable update, Action...sequentialActions){
+        this.parent = parent;
+        this.update = update;
+        this.sequentialActions = sequentialActions;
     }
 
     public int getError() {
         int sum = 0;
-        for(Action a:actions){
+        for(Action a: sequentialActions){
             sum += a.getError();
         }
-        return sum/actions.length;
+        return sum/ sequentialActions.length;
     }
 
     public boolean canStartNext(){
         boolean canStart = true;
-        for(Action a:actions){
+        for(Action a: sequentialActions){
             canStart = a.canStartNext() && canStart;
         }
         return canStart;
@@ -38,19 +45,23 @@ public class SequentialActionGroup extends Action {
 
     public boolean isFinished(){
         boolean canFinish = true;
-        for(Action a:actions){
+        for(Action a: sequentialActions){
             canFinish = a.isFinished() && canFinish;
         }
         return canFinish;
     }
 
     public void actuate() {
-        for (int i=0;i < actions.length;i++) {
-            currentAction = actions[i];
+        for (int i = 0; i < sequentialActions.length; i++) {
+            currentAction = sequentialActions[i];
             currentAction.actuate();
 
             while(!currentAction.canStartNext()){
                 update.run();
+
+                if(parent.isFinished()){
+                    this.stop();
+                }
 
                 if(currentAction.isFinished()){
                     currentAction.stop();
@@ -60,13 +71,13 @@ public class SequentialActionGroup extends Action {
     }
 
     public void stop(){
-        for(Action a:actions){
+        for(Action a: sequentialActions){
             a.stop();
         }
     }
 
     public void forceStop(){
-        for(Action a:actions){
+        for(Action a: sequentialActions){
             a.forceStop();
         }
     }

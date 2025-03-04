@@ -6,7 +6,7 @@ import org.firstinspires.ftc.teamcode.SuperStructure;
  * Servo Actions - i.e. actions where the finish condition is determined by a timer rather than an encoder
  */
 
-public class ServoAction extends Action {
+public abstract class ServoAction extends Action {
     private int waitTime = 80;
     protected SuperStructure upper;
     //Params not in super class

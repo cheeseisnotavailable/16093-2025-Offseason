@@ -105,7 +105,7 @@ public class SuperStructure {
         this.updateRunnable = updateRunnable;
     }
 
-    public SuperStructure(LinearOpMode opMode, Runnable updateRunnable, int armOffset){
+    public SuperStructure(LinearOpMode opMode, Runnable updateRunnable){
         this.opMode = opMode;
         HardwareMap hardwareMap = opMode.hardwareMap;
         this.updateRunnable = updateRunnable;
@@ -176,7 +176,7 @@ public class SuperStructure {
 
         this.sequence = Sequences.RUN;
         this.previousSequence = Sequences.RUN;
-        this.armOffset = armOffset;
+        this.armOffset = 0;
         distance = hardwareMap.get(DistanceSensor.class, "color");
     }
 

@@ -13,7 +13,7 @@ public class ColorSensorTest extends LinearOpMode {
     NewMecanumDrive drive;
     double oldTime = 0;
     public void runOpMode(){
-        upper = new SuperStructure(this,()->{},0);
+        upper = new SuperStructure(this,()->{});
         drive = new NewMecanumDrive(hardwareMap);
         waitForStart();
         while(opModeIsActive()){

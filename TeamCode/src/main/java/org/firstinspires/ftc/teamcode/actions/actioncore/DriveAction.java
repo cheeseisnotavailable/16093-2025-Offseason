@@ -35,15 +35,19 @@ public class DriveAction extends Action {
 
 
     public boolean canStartNext(){
-        return !drive.isBusy();
+        if(System.currentTimeMillis() - timeOnStart > waitTime){
+            return true;
+        }else{
+            return false;
+        }
     }
 
     public boolean isFinished(){
-        return !drive.simpleMoveIsActivate;
+        return false;
     }
 
     public void actuate() {
-        drive.moveTo(targetPose,correctTime,runWhileMoving);
+            drive.moveTo(targetPose,correctTime,runWhileMoving);
     }
 
     public void stop(){
@@ -62,9 +66,7 @@ public class DriveAction extends Action {
     }
 
     public String returnType(){
-        return "MotorAction";
+        return "DriveAction";
     }
-
-
 
 }

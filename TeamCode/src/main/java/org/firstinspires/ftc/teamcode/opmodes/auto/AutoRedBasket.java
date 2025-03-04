@@ -3,7 +3,7 @@ package org.firstinspires.ftc.teamcode.opmodes.auto;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
-@Autonomous (name = "AutoBlueBasket")
+@Autonomous
 public class AutoRedBasket extends AutoMaster{
     @Override
     public void runOpMode() throws InterruptedException {

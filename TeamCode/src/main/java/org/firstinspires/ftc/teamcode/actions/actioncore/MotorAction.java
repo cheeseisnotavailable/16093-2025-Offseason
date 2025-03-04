@@ -5,7 +5,7 @@ import com.acmerobotics.dashboard.config.Config;
 import org.firstinspires.ftc.teamcode.SuperStructure;
 
 @Config
-public class MotorAction extends Action {
+public abstract class MotorAction extends Action {
     protected int toleranceRange = 200;
     protected int finishRange = 15;
     protected SuperStructure upper;

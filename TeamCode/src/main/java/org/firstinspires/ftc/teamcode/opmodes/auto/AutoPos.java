@@ -16,7 +16,7 @@ public class AutoPos extends LinearOpMode {
 
         upper = new SuperStructure(
                 this,
-                () -> {upper.update();}, 0);
+                () -> {upper.update();});
 
         waitForStart();
 

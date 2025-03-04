@@ -55,7 +55,7 @@ public class TestDrift extends LinearOpMode{
                 if(count < poses.length){
                     currentPose = poses[count];
 //                    drive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-                    drive.moveToWithDrift(currentPose);
+                    drive.moveWithDrift(currentPose);
                     drive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
                     count++;
                 }else{

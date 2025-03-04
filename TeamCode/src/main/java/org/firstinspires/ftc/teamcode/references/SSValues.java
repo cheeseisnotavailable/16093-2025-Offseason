@@ -24,7 +24,7 @@ public class SSValues {
     public static int SLIDE_HOLD_ASCENT = -100; // BE REALLY CAREFUL WITH THIS ONE OKAY???
     public static int SLIDE_OPENLOOP_LIMIT = 50;
 
-    public static int SLIDE_SLIGHTLY_LONGER = (int)(slideMaxValue *0.1903);
+    public static int SLIDE_SLIGHTLY_LONGER = (int)(slideMaxValue *0.07);
     public static int SLIDE_LONGER = (int)(slideMaxValue *0.3);
     public static int SLIDE_LOW_BASKET = (int)(slideMaxValue *0.4);
 

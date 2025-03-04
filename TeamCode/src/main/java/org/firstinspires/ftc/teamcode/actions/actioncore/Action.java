@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import org.firstinspires.ftc.teamcode.SuperStructure;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.function.BooleanSupplier;
 
 public class Action {
@@ -31,7 +32,6 @@ public class Action {
         return false;
     }
 
-
     public String returnType() {
         return "Action";
     }
@@ -40,7 +40,6 @@ public class Action {
     }
 
     public void stop(){
-//        actions.remove(this);
     }
 
     public String toString(){
@@ -57,7 +56,7 @@ public class Action {
         if(!actions.isEmpty()){
             for (int i=0;i < actions.size();i++) {
                 currentAction = actions.get(i);
-                currentAction.actuate(); // Execute current action
+                currentAction.actuate();
 
                 while(!currentAction.canStartNext() && opModeActive.getAsBoolean()){
                     runWhileBuilding.run();
@@ -69,12 +68,12 @@ public class Action {
                         break;
                     }
 
-                    if(currentAction.isFinished()){ //|| System.currentTimeMillis() - currentAction.timeOnStart > 10000
+                    if(currentAction.isFinished()){
                         currentAction.stop();
                     }
                 }
             }
-            actions.clear(); // Clear completed actions and reset mode
+            actions.clear();
         }
     }
 

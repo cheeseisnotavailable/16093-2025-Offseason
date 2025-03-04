@@ -1,15 +1,15 @@
 package org.firstinspires.ftc.teamcode.actions.actioncore;
 
 /**
- * A shortcut for anything else you might want to queue
+ * A shortcut for anything else you might want to queue, with a timer as a finish condition
  */
-public class SequencerAction extends Action {
+public class CustomWaitAction extends Action {
     private int waitTime = 0;
     //Params not in super class
     private long timeOnStart;
     private Runnable doThis;
 
-    public SequencerAction(Runnable doThis, int waitTime){
+    public CustomWaitAction(Runnable doThis, int waitTime){
         this.waitTime = waitTime;
         this.doThis = doThis;
         timeOnStart = System.currentTimeMillis();
@@ -39,6 +39,6 @@ public class SequencerAction extends Action {
     }
 
     public String returnType(){
-        return "SequencerAction";
+        return "SequencerWaitAction";
     }
 }
