@@ -6,6 +6,9 @@ package org.firstinspires.ftc.teamcode.drive;
 
 //This version generously provided by FTC 12527 Prototype
 
+import com.acmerobotics.roadrunner.control.PIDCoefficients;
+
+
 import org.firstinspires.ftc.teamcode.util.WPIMathUtil;
 
 /** Implements a PID control loop. */
@@ -76,6 +79,10 @@ public class SQPIDController {
    */
   public SQPIDController(double kp, double ki, double kd) {
     this(kp, ki, kd, 0, 0, 0);
+  }
+
+  public SQPIDController(PIDCoefficients coeff){
+    this(coeff.kP, coeff.kI, coeff.kD, 0,0,0);
   }
 
   /**

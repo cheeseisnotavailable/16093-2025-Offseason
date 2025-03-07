@@ -15,10 +15,8 @@ import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.control.PIDCoefficients;
-import com.acmerobotics.roadrunner.control.PIDFController;
 import com.acmerobotics.roadrunner.drive.DriveSignal;
 import com.acmerobotics.roadrunner.drive.MecanumDrive;
-import com.acmerobotics.roadrunner.followers.HolonomicPIDVAFollower;
 import com.acmerobotics.roadrunner.followers.TrajectoryFollower;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
@@ -56,12 +54,13 @@ import XCYOS.Task;
 
 /*
  * The home of SimpleMove, currently for Pinpoint Odometry!
+ * With lots of RoadRunner stuff as well
  * Code very much not by me
  */
 @Config
 public class NewMecanumDrive extends MecanumDrive {
-    public static PIDCoefficients TRANS_PID = new PIDCoefficients(10, 0, 0);
-    public static PIDCoefficients HEADING_PID = new PIDCoefficients(8, 0.001, 1); //i = 0
+    public static PIDCoefficients TRANS_PID = new PIDCoefficients(9.6, 0, 0);
+    public static PIDCoefficients HEADING_PID = new PIDCoefficients(2.1, 0, 0); //i = 0
 
     public static double LATERAL_MULTIPLIER = 1;
 
@@ -104,7 +103,7 @@ public class NewMecanumDrive extends MecanumDrive {
     public NewMecanumDrive(HardwareMap hardwareMap) {
         super(kV, kA, kStatic, TRACK_WIDTH, TRACK_WIDTH, LATERAL_MULTIPLIER);
 
-        follower = new HolonomicPIDVAFollower(TRANS_PID, TRANS_PID, HEADING_PID,
+        follower = new SQPIDHolonomicFollower(TRANS_PID, TRANS_PID, HEADING_PID,
                 new Pose2d(0.5, 0.5, Math.toRadians(5.0)), 0.5);
 
         LynxModuleUtil.ensureMinimumFirmwareVersion(hardwareMap);
@@ -325,11 +324,10 @@ public class NewMecanumDrive extends MecanumDrive {
         double driveCoefficientTrans = 1;
         double driveCoefficientRot = 1;
 
-        /*This may change depending on the sequence!
-        e.g. if(sequence == SuperStructure.Sequences.INTAKE_FAR){
+        if(sequence == SuperStructure.Sequences.INTAKE_FAR || sequence == SuperStructure.Sequences.HIGH_BASKET) {
             driveCoefficientTrans = 0.4;
             driveCoefficientRot = 0.4;
-         */
+        }
 
         if(ignoreDriveCoefficients) {
             driveCoefficientTrans = 1;
@@ -451,22 +449,22 @@ public class NewMecanumDrive extends MecanumDrive {
         return new ProfileAccelerationConstraint(maxAccel);
     }
 
-    public static PIDCoefficients translationXPid = new PIDCoefficients(0.1678, 0.000, 0.00886);
-    public static PIDCoefficients translationYPid = new PIDCoefficients(0.1478, 0.000, 0.01086);
-    public static PIDCoefficients headingPid = new PIDCoefficients(1.46, 0, 0.1);
+    public static PIDCoefficients translationXPid = new PIDCoefficients(0.18, 0.000, 0.006);
+    public static PIDCoefficients translationYPid = new PIDCoefficients(0.17, 0.000, 0.008);
+    public static PIDCoefficients headingPid = new PIDCoefficients(0.5, 0, 0.09);
 
-    private PIDFController transPID_x;
-    private PIDFController transPID_y;
-    private PIDFController turnPID;
+    private SQPIDController transPID_x;
+    private SQPIDController transPID_y;
+    private SQPIDController turnPID;
 
 
-    public static PIDCoefficients armUpXPid = new PIDCoefficients(0.1778, 0.000, 0.02286);
-    public static PIDCoefficients armUpYPid = new PIDCoefficients(0.1778, 0.000, 0.02286);
-    public static PIDCoefficients armUpHeadingPid = new PIDCoefficients(1.5, 0, 0.1);
+    public static PIDCoefficients altXPid = new PIDCoefficients(0.45, 0.000, 0.01);
+    public static PIDCoefficients altYPid = new PIDCoefficients(0.22, 0.000, 0.009);
+    public static PIDCoefficients altHeadingPid = new PIDCoefficients(0.3, 0, 0);
 
-    private PIDFController armUpTransPID_x;
-    private PIDFController armUpTransPID_y;
-    private PIDFController armUpTurnPID;
+    private SQPIDController altTransPID_x;
+    private SQPIDController altTransPID_y;
+    private SQPIDController altTurnPID;
 
 
     private double moveHeading = 0;
@@ -495,25 +493,25 @@ public class NewMecanumDrive extends MecanumDrive {
     public void initSimpleMove(Pose2d pos) {
         stopTrajectory();
         simpleMoveIsActivate = true;
-        transPID_x = new PIDFController(translationXPid);
-        transPID_x.setTargetPosition(pos.getX());
+        transPID_x = new SQPIDController(translationXPid);
+        transPID_x.setSetpoint(pos.getX());
 
-        transPID_y = new PIDFController(translationYPid);
-        transPID_y.setTargetPosition(pos.getY());
+        transPID_y = new SQPIDController(translationYPid);
+        transPID_y.setSetpoint(pos.getY());
 
-        turnPID = new PIDFController(headingPid);
+        turnPID = new SQPIDController(headingPid);
         moveHeading = pos.getHeading();
-        turnPID.setTargetPosition(0);
+        turnPID.setSetpoint(0);
 
-        armUpTransPID_x = new PIDFController(armUpXPid);
-        armUpTransPID_x.setTargetPosition(pos.getX());
+        altTransPID_x = new SQPIDController(altXPid);
+        altTransPID_x.setSetpoint(pos.getX());
 
-        armUpTransPID_y = new PIDFController(armUpYPid);
-        armUpTransPID_y.setTargetPosition(pos.getY());
+        altTransPID_y = new SQPIDController(altYPid);
+        altTransPID_y.setSetpoint(pos.getY());
 
-        armUpTurnPID = new PIDFController(armUpHeadingPid);
+        altTurnPID = new SQPIDController(altHeadingPid);
         moveHeading = pos.getHeading();
-        armUpTurnPID.setTargetPosition(0);
+        altTurnPID.setSetpoint(0);
     }
 
     public void moveTo(Pose2d endPose, int correctTime_ms) {
@@ -548,7 +546,7 @@ public class NewMecanumDrive extends MecanumDrive {
 
 
     public Pose2d getSimpleMovePosition() {
-        return new Pose2d(transPID_x.getTargetPosition(), transPID_y.getTargetPosition(), moveHeading);
+        return new Pose2d(transPID_x.getSetpoint(), transPID_y.getSetpoint(), moveHeading);
     }
 
     public Task simpleMoveTime(Pose2d pose, int time, double power, double toleranceRate) {
@@ -602,7 +600,6 @@ public class NewMecanumDrive extends MecanumDrive {
     }
 
     public void moveTo(Pose2d... poses) {
-
         for (Pose2d targetPose : poses) {
             moveTo(targetPose,0); // 对每个目标点调用带漂移的移动方法
         }
@@ -630,19 +627,20 @@ public class NewMecanumDrive extends MecanumDrive {
         setWeightedDrivePower(new Pose2d(vec, drivePower.getHeading()));
     }
 
+
     public void simpleMovePeriod() {
         Pose2d current_pos = getPoseEstimate();
         if(switchDrive){
             this.setGlobalPower(new Pose2d(
-                    clamp(armUpTransPID_x.update(current_pos.getX()), simpleMovePower),
-                    clamp(armUpTransPID_y.update(current_pos.getY()), simpleMovePower),
-                    clamp(armUpTurnPID.update(AngleUnit.normalizeRadians(current_pos.getHeading() - moveHeading)), simpleMovePower)
+                    clamp(altTransPID_x.calculate(current_pos.getX()), simpleMovePower),
+                    clamp(altTransPID_y.calculate(current_pos.getY()), simpleMovePower),
+                    clamp(altTurnPID.calculate(AngleUnit.normalizeRadians(current_pos.getHeading() - moveHeading)), simpleMovePower)
             ), 0, 0);
         }else{
             this.setGlobalPower(new Pose2d(
-                    clamp(transPID_x.update(current_pos.getX()), simpleMovePower),
-                    clamp(transPID_y.update(current_pos.getY()), simpleMovePower),
-                    clamp(turnPID.update(AngleUnit.normalizeRadians(current_pos.getHeading() - moveHeading)), simpleMovePower)
+                    clamp(transPID_x.calculate(current_pos.getX()), simpleMovePower),
+                    clamp(transPID_y.calculate(current_pos.getY()), simpleMovePower),
+                    clamp(turnPID.calculate(AngleUnit.normalizeRadians(current_pos.getHeading() - moveHeading)), simpleMovePower)
             ), 0, 0);
         }
     }
@@ -702,7 +700,7 @@ public class NewMecanumDrive extends MecanumDrive {
         setMotorPowers(1-speedDiff,1-speedDiff,1,1);
     }
 
-    public void turnOnSwitchDrive(boolean on){
+    public void useAltPID(boolean on){
         manualSwitchDrive = on;
     }
 

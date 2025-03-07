@@ -8,7 +8,7 @@ public class AutoBlueHP extends AutoMaster{
     @Override
     public void runOpMode() throws InterruptedException {
 
-        initAuto(new Pose2d(-15  ,62.3 ,Math.toRadians(90)));
+        initAuto(new Pose2d(-9.5  ,62.3 ,Math.toRadians(90)));
 
         while(opModeInInit()){
 
@@ -18,7 +18,21 @@ public class AutoBlueHP extends AutoMaster{
         newFirstMoveToBlueChamberPlace();
 
         VexpPushTwoBlueSamples();
-//        intakeThreeBlueSamples();
+
+
+//        expResetChamberAndMoveToIntake(0, 0.5, 0, true);
+//        expGetYellowSamples();
+//        throwBehind();
+//
+////        expResetChamberAndMoveToIntake(-8.7, 1.8, 0, false);
+//        turnTo(-120, 30);
+//        expGetYellowSamples();
+//        throwBehind();
+//
+//        turnTo(-140, 30);
+//        throwBehind();
+
+
 
         intakeSpecimenFromBlueWall(-6,0);
         blueChamberPlaceFromWall(12,0);
@@ -32,7 +46,7 @@ public class AutoBlueHP extends AutoMaster{
         intakeSpecimenFromBlueWall(0,-1.3);
         blueChamberPlaceFromWall(6.5,0);
 
-        parkFromBlueChamber();
+        intakeSpecimenFromBlueWall(0,-1.3);
 
         while(opModeIsActive()){
             super.update.run();
