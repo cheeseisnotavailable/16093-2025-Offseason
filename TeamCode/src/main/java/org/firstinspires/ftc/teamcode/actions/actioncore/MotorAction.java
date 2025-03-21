@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.actions.actioncore;
 
+import com.acmerobotics.dashboard.RobotStatus;
 import com.acmerobotics.dashboard.config.Config;
+import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.teamcode.SuperStructure;
 
@@ -59,6 +61,7 @@ public abstract class MotorAction extends Action {
     }
 
     public void stop(){
+        RobotLog.d("----Stopped: "+this.toString());
     }
 
     //Functions not in super class

@@ -59,7 +59,7 @@ import XCYOS.Task;
  */
 @Config
 public class NewMecanumDrive extends MecanumDrive {
-    public static PIDCoefficients TRANS_PID = new PIDCoefficients(9.6, 0, 0);
+    public static PIDCoefficients TRANS_PID = new PIDCoefficients(10.4, 0, 0);
     public static PIDCoefficients HEADING_PID = new PIDCoefficients(2.1, 0, 0); //i = 0
 
     public static double LATERAL_MULTIPLIER = 1;
@@ -100,6 +100,12 @@ public class NewMecanumDrive extends MecanumDrive {
     }
     private boolean switchDrive = false;
 
+    /**
+     * Constructor for NewMecanumDrive.
+     * Initialize this during opMode initialization with the opMode's hardwareMap.
+     * This version uses the Pinpoint Odometry computer, which requires that the robot is completely still during init.
+     * @param hardwareMap
+     */
     public NewMecanumDrive(HardwareMap hardwareMap) {
         super(kV, kA, kStatic, TRACK_WIDTH, TRACK_WIDTH, LATERAL_MULTIPLIER);
 
@@ -154,6 +160,14 @@ public class NewMecanumDrive extends MecanumDrive {
         );
 
         odo.recalibrateIMU();
+
+        updatePoseEstimate();
+        DriveSignal signal = trajectorySequenceRunner.update(getPoseEstimate(), getPoseVelocity());
+        if (simpleMoveIsActivate) {
+            simpleMovePeriod();
+        } else if (signal != null) {
+            setDriveSignal(signal);
+        }
     }
 
     public TrajectoryBuilder trajectoryBuilder(Pose2d startPose) {
@@ -215,35 +229,25 @@ public class NewMecanumDrive extends MecanumDrive {
         return trajectorySequenceRunner.getLastPoseError();
     }
 
-    public void initialUpdate() {
-        updatePoseEstimate();
-
-        switchDrive = switchDrivePIDCondition.getAsBoolean()&&manualSwitchDrive;
-        DriveSignal signal = trajectorySequenceRunner.update(getPoseEstimate(), getPoseVelocity());
-        if (simpleMoveIsActivate) {
-            simpleMovePeriod();
-        } else if (signal != null) {
-            setDriveSignal(signal);
-        }
-        //THIS IS THE ORIGINAL
-//        updatePoseEstimate();
-//        DriveSignal signal = trajectorySequenceRunner.update(getPoseEstimate(), getPoseVelocity());
-//        if (simpleMoveIsActivate) {
-//            simpleMovePeriod();
-//        } else if (signal != null) {
-//            setDriveSignal(signal);
-//        }
-    }
-
+    /**
+     * This must be called every cycle when SimpleMove is active during the update loop of opModes.
+     * If SimpleMove is not active, updatePoseEstimate() should be called instead.
+     */
     public void update() {
         updatePoseEstimate();
 
+        //This is here to ensure SimpleMove always stops when the opMode stops.
         if(!opModeActive.getAsBoolean()){
             simpleMoveIsActivate = false;
             return;
         }
 
+        //The following line was added by Annie and deals with multiple sets of PIDs.
+        //It requires two conditions: one automatic (set in code) and one manual (turned on using useAltPID())
+        //Only when both are true will the PID switch.
         switchDrive = switchDrivePIDCondition.getAsBoolean()&&manualSwitchDrive;
+
+        //THE CORE OF SIMPLEMOVE
         DriveSignal signal = trajectorySequenceRunner.update(getPoseEstimate(), getPoseVelocity());
         if (simpleMoveIsActivate) {
             simpleMovePeriod();
@@ -251,14 +255,6 @@ public class NewMecanumDrive extends MecanumDrive {
             setDriveSignal(signal);
         }
 
-        //THIS IS THE ORIGINAL:
-//        updatePoseEstimate();
-//        DriveSignal signal = trajectorySequenceRunner.update(getPoseEstimate(), getPoseVelocity());
-//        if (simpleMoveIsActivate) {
-//            simpleMovePeriod();
-//        } else if (signal != null) {
-//            setDriveSignal(signal);
-//        }
     }
 
     public void waitForIdle() {
@@ -266,6 +262,11 @@ public class NewMecanumDrive extends MecanumDrive {
             updateRunnable.run();
     }
 
+    /**
+     * Used for both SimpleMove and regular RoadRunner
+     * When SimpleMove is active it returns true if the position of the robot is within the set tolerance
+     * When SimpleMove isn't active it does RoadRunner stuff. (TODO: What RoadRunner stuff?)
+     */
     public boolean isBusy() {
         if (simpleMoveIsActivate) {
             Pose2d err = getSimpleMovePosition().minus(getPoseEstimate());
@@ -274,193 +275,18 @@ public class NewMecanumDrive extends MecanumDrive {
         return trajectorySequenceRunner.isBusy();
     }
 
-    public void setMode(DcMotor.RunMode runMode) {
-        for (DcMotorEx motor : motors) {
-            motor.setMode(runMode);
-        }
-    }
-
-    public void setZeroPowerBehavior(DcMotor.ZeroPowerBehavior zeroPowerBehavior) {
-        for (DcMotorEx motor : motors) {
-            motor.setZeroPowerBehavior(zeroPowerBehavior);
-        }
-    }
-
-    public void setPIDFCoefficients(DcMotor.RunMode runMode, PIDFCoefficients coefficients) {
-        PIDFCoefficients compensatedCoefficients = new PIDFCoefficients(
-                coefficients.p, coefficients.i, coefficients.d,
-                coefficients.f * 12 / batteryVoltageSensor.getVoltage()
-        );
-
-        for (DcMotorEx motor : motors) {
-            motor.setPIDFCoefficients(runMode, compensatedCoefficients);
-        }
-    }
-
-    public void setWeightedDrivePower(Pose2d drivePower) {
-        Pose2d vel = drivePower;
-
-        if (Math.abs(drivePower.getX()) + Math.abs(drivePower.getY())
-                + Math.abs(drivePower.getHeading()) > 1) {
-            // re-normalize the powers according to the weights
-            //TODO: CHANGE THE SIGN OF X AND Y
-            double denom = VX_WEIGHT * Math.abs(drivePower.getX())
-                    + VY_WEIGHT * Math.abs(drivePower.getY())
-                    + OMEGA_WEIGHT * Math.abs(drivePower.getHeading());
-
-            vel = new Pose2d(
-                    VX_WEIGHT * drivePower.getX(),
-                    VY_WEIGHT * drivePower.getY(),
-                    OMEGA_WEIGHT * drivePower.getHeading()
-            ).div(denom);
-        }
-
-        setDrivePower(vel);
-    }
-
-    public static boolean ignoreDriveCoefficients = false;
-    public void setFieldCentric(double x, double y, double rx, SuperStructure.Sequences sequence) {
-        double botHeading = getHeading();
-        double driveCoefficientTrans = 1;
-        double driveCoefficientRot = 1;
-
-        if(sequence == SuperStructure.Sequences.INTAKE_FAR || sequence == SuperStructure.Sequences.HIGH_BASKET) {
-            driveCoefficientTrans = 0.4;
-            driveCoefficientRot = 0.4;
-        }
-
-        if(ignoreDriveCoefficients) {
-            driveCoefficientTrans = 1;
-            driveCoefficientRot = 1;
-        }
-
-        y = y*-driveCoefficientTrans;
-        x = x*driveCoefficientTrans;
-        rx =rx*-driveCoefficientRot;
-
-
-        double rotX = x * Math.cos(-botHeading) - y * Math.sin(-botHeading);
-        double rotY = x * Math.sin(-botHeading) + y * Math.cos(-botHeading);
-        rotX = rotX * 1.1;
-
-        double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(rx), 1);
-        double frontLeftPower = (rotY + rotX + rx) / denominator;
-        double backLeftPower = (rotY - rotX + rx) / denominator;
-        double frontRightPower = (rotY - rotX - rx) / denominator;
-        double backRightPower = (rotY + rotX - rx) / denominator;
-
-        setMotorPowers(frontLeftPower, backLeftPower, backRightPower, frontRightPower);
-    }
-
-    public void setBotCentric(double x, double y, double rx, SuperStructure.Sequences sequence) {
-        double botHeading = 0;
-        double driveCoefficientTrans = 1;
-        double driveCoefficientRot = 1;
-
-        /*
-        Same deal here.
-         */
-
-        if(ignoreDriveCoefficients) {
-            driveCoefficientTrans = 1;
-            driveCoefficientRot = 1;
-        }
-
-        y = y*-driveCoefficientTrans;
-        x = x*driveCoefficientTrans;
-        rx = rx*-driveCoefficientRot;
-
-        double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1);
-        double frontLeftPower = (y + x + rx) / denominator;
-        double backLeftPower = (y - x + rx) / denominator;
-        double frontRightPower = (y - x - rx) / denominator;
-        double backRightPower = (y + x - rx) / denominator;
-
-        setMotorPowers(frontLeftPower, backLeftPower, backRightPower, frontRightPower);
-    }
-
-    @NonNull
-    @Override
-    public List<Double> getWheelPositions() {
-        lastEncPositions.clear();
-
-        List<Double> wheelPositions = new ArrayList<>();
-        lastEncPositions.add(odo.getEncoderX());
-        wheelPositions.add(mmToInches(odo.getPosX()));
-
-        lastEncPositions.add(odo.getEncoderY());
-        wheelPositions.add(mmToInches(odo.getPosY()));
-
-        return wheelPositions;
-    }
-
-    @Override
-    public List<Double> getWheelVelocities() {
-        lastEncVels.clear();
-
-        List<Double> wheelVelocities = new ArrayList<>();
-
-        // TODO: 2024/10/30 getRawVelocity
-        lastEncVels.add((int) odo.getVelX());
-        wheelVelocities.add(mmToInches(odo.getVelX()));
-
-        lastEncVels.add((int)odo.getVelY());
-        wheelVelocities.add(mmToInches(odo.getVelY()));
-
-        return wheelVelocities;
-    }
-
-    @Override
-    public void setMotorPowers(double lf, double lr, double rr, double rf) {
-        leftFront.setPower(lf);
-        leftRear.setPower(lr);
-        rightRear.setPower(rr);
-        rightFront.setPower(rf);
-    }
-
-    /*
-    Array of length 4
-     */
-    public void setMotorPowers(double[] powers) {
-        leftFront.setPower(powers[0]);
-        leftRear.setPower(powers[1]);
-        rightRear.setPower(powers[2]);
-        rightFront.setPower(powers[3]);
-    }
-
-    @Override
-    public double getRawExternalHeading() {
-        return odo.getHeading();
-    }
-
-    @Override
-    public Double getExternalHeadingVelocity() {
-        return (double) odo.getHeadingVelocity();
-    }
-
-    public static TrajectoryVelocityConstraint getVelocityConstraint(double maxVel, double maxAngularVel, double trackWidth) {
-        return new MinVelocityConstraint(Arrays.asList(
-                new AngularVelocityConstraint(maxAngularVel),
-                new MecanumVelocityConstraint(maxVel, trackWidth)
-        ));
-    }
-
-    public static TrajectoryAccelerationConstraint getAccelerationConstraint(double maxAccel) {
-        return new ProfileAccelerationConstraint(maxAccel);
-    }
-
     public static PIDCoefficients translationXPid = new PIDCoefficients(0.18, 0.000, 0.006);
-    public static PIDCoefficients translationYPid = new PIDCoefficients(0.17, 0.000, 0.008);
-    public static PIDCoefficients headingPid = new PIDCoefficients(0.5, 0, 0.09);
+    public static PIDCoefficients translationYPid = new PIDCoefficients(0.2, 0.000, 0.01);
+    public static PIDCoefficients headingPid = new PIDCoefficients(0.43, 0, 0.09);
 
     private SQPIDController transPID_x;
     private SQPIDController transPID_y;
     private SQPIDController turnPID;
 
 
-    public static PIDCoefficients altXPid = new PIDCoefficients(0.45, 0.000, 0.01);
+    public static PIDCoefficients altXPid = new PIDCoefficients(0.30, 0.000, 0.01);
     public static PIDCoefficients altYPid = new PIDCoefficients(0.22, 0.000, 0.009);
-    public static PIDCoefficients altHeadingPid = new PIDCoefficients(0.3, 0, 0);
+    public static PIDCoefficients altHeadingPid = new PIDCoefficients(0.2, 0, 0.2);
 
     private SQPIDController altTransPID_x;
     private SQPIDController altTransPID_y;
@@ -601,15 +427,14 @@ public class NewMecanumDrive extends MecanumDrive {
 
     public void moveTo(Pose2d... poses) {
         for (Pose2d targetPose : poses) {
-            moveTo(targetPose,0); // 对每个目标点调用带漂移的移动方法
+            moveTo(targetPose,0);
         }
-
     }
 
 
 
     /**
-     * 无头功率
+     *
      *
      * @param drivePower
      * @param x_static
@@ -652,6 +477,197 @@ public class NewMecanumDrive extends MecanumDrive {
             update();
         }
     };
+
+    public void setMode(DcMotor.RunMode runMode) {
+        for (DcMotorEx motor : motors) {
+            motor.setMode(runMode);
+        }
+    }
+
+    public void setZeroPowerBehavior(DcMotor.ZeroPowerBehavior zeroPowerBehavior) {
+        for (DcMotorEx motor : motors) {
+            motor.setZeroPowerBehavior(zeroPowerBehavior);
+        }
+    }
+
+    public void setPIDFCoefficients(DcMotor.RunMode runMode, PIDFCoefficients coefficients) {
+        PIDFCoefficients compensatedCoefficients = new PIDFCoefficients(
+                coefficients.p, coefficients.i, coefficients.d,
+                coefficients.f * 12 / batteryVoltageSensor.getVoltage()
+        );
+
+        for (DcMotorEx motor : motors) {
+            motor.setPIDFCoefficients(runMode, compensatedCoefficients);
+        }
+    }
+
+    public void setWeightedDrivePower(Pose2d drivePower) {
+        Pose2d vel = drivePower;
+
+        if (Math.abs(drivePower.getX()) + Math.abs(drivePower.getY())
+                + Math.abs(drivePower.getHeading()) > 1) {
+            // re-normalize the powers according to the weights
+            //TODO: CHANGE THE SIGN OF X AND Y
+            double denom = VX_WEIGHT * Math.abs(drivePower.getX())
+                    + VY_WEIGHT * Math.abs(drivePower.getY())
+                    + OMEGA_WEIGHT * Math.abs(drivePower.getHeading());
+
+            vel = new Pose2d(
+                    VX_WEIGHT * drivePower.getX(),
+                    VY_WEIGHT * drivePower.getY(),
+                    OMEGA_WEIGHT * drivePower.getHeading()
+            ).div(denom);
+        }
+
+        setDrivePower(vel);
+    }
+
+    public static boolean ignoreDriveCoefficients = false;
+    public void setFieldCentric(double x, double y, double rx, SuperStructure.Sequences sequence) {
+        double botHeading = getHeading();
+        double driveCoefficientTrans = 1;
+        double driveCoefficientRot = 1;
+
+        if(sequence == SuperStructure.Sequences.INTAKE_FAR){
+            driveCoefficientTrans = 0.4;
+            driveCoefficientRot = 0.4;
+        }else if(sequence == SuperStructure.Sequences.INTAKE_NEAR){
+            driveCoefficientTrans = 0.3;
+            driveCoefficientRot = 0.3;
+        }else if (sequence == SuperStructure.Sequences.LOW_BASKET||sequence==SuperStructure.Sequences.HIGH_BASKET){
+            driveCoefficientTrans = 0.9;
+            driveCoefficientRot = 0.6;
+        } else if (sequence == SuperStructure.Sequences.HIGH_CHAMBER_PLACE){
+            driveCoefficientRot = 0.5;
+            driveCoefficientTrans = 0.5;
+        }else{
+            driveCoefficientTrans = 1;
+            driveCoefficientRot = 1;
+        }
+
+        if(ignoreDriveCoefficients) {
+            driveCoefficientTrans = 1;
+            driveCoefficientRot = 1;
+        }
+
+        y = y*-driveCoefficientTrans;
+        x = x*driveCoefficientTrans;
+        rx =rx*-driveCoefficientRot;
+
+
+        double rotX = x * Math.cos(-botHeading) - y * Math.sin(-botHeading);
+        double rotY = x * Math.sin(-botHeading) + y * Math.cos(-botHeading);
+        rotX = rotX * 1.1;
+
+        double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(rx), 1);
+        double frontLeftPower = (rotY + rotX + rx) / denominator;
+        double backLeftPower = (rotY - rotX + rx) / denominator;
+        double frontRightPower = (rotY - rotX - rx) / denominator;
+        double backRightPower = (rotY + rotX - rx) / denominator;
+
+        setMotorPowers(frontLeftPower, backLeftPower, backRightPower, frontRightPower);
+    }
+
+    public void setBotCentric(double x, double y, double rx, SuperStructure.Sequences sequence) {
+        double botHeading = 0;
+        double driveCoefficientTrans = 1;
+        double driveCoefficientRot = 1;
+
+        /*
+        Same deal here.
+         */
+
+        if(ignoreDriveCoefficients) {
+            driveCoefficientTrans = 1;
+            driveCoefficientRot = 1;
+        }
+
+        y = y*-driveCoefficientTrans;
+        x = x*driveCoefficientTrans;
+        rx = rx*-driveCoefficientRot;
+
+        double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1);
+        double frontLeftPower = (y + x + rx) / denominator;
+        double backLeftPower = (y - x + rx) / denominator;
+        double frontRightPower = (y - x - rx) / denominator;
+        double backRightPower = (y + x - rx) / denominator;
+
+        setMotorPowers(frontLeftPower, backLeftPower, backRightPower, frontRightPower);
+    }
+
+    @NonNull
+    @Override
+    public List<Double> getWheelPositions() {
+        lastEncPositions.clear();
+
+        List<Double> wheelPositions = new ArrayList<>();
+        lastEncPositions.add(odo.getEncoderX());
+        wheelPositions.add(mmToInches(odo.getPosX()));
+
+        lastEncPositions.add(odo.getEncoderY());
+        wheelPositions.add(mmToInches(odo.getPosY()));
+
+        return wheelPositions;
+    }
+
+    @Override
+    public List<Double> getWheelVelocities() {
+        lastEncVels.clear();
+
+        List<Double> wheelVelocities = new ArrayList<>();
+
+        // TODO: 2024/10/30 getRawVelocity
+        lastEncVels.add((int) odo.getVelX());
+        wheelVelocities.add(mmToInches(odo.getVelX()));
+
+        lastEncVels.add((int)odo.getVelY());
+        wheelVelocities.add(mmToInches(odo.getVelY()));
+
+        return wheelVelocities;
+    }
+
+    @Override
+    /**
+     * Sets motor powers with four doubles.
+     */
+    public void setMotorPowers(double lf, double lr, double rr, double rf) {
+        leftFront.setPower(lf);
+        leftRear.setPower(lr);
+        rightRear.setPower(rr);
+        rightFront.setPower(rf);
+    }
+
+    /**
+     * Sets motor powers with an array of length 4.
+     * @param powers
+     */
+    public void setMotorPowers(double[] powers) {
+        leftFront.setPower(powers[0]);
+        leftRear.setPower(powers[1]);
+        rightRear.setPower(powers[2]);
+        rightFront.setPower(powers[3]);
+    }
+
+    @Override
+    public double getRawExternalHeading() {
+        return odo.getHeading();
+    }
+
+    @Override
+    public Double getExternalHeadingVelocity() {
+        return (double) odo.getHeadingVelocity();
+    }
+
+    public static TrajectoryVelocityConstraint getVelocityConstraint(double maxVel, double maxAngularVel, double trackWidth) {
+        return new MinVelocityConstraint(Arrays.asList(
+                new AngularVelocityConstraint(maxAngularVel),
+                new MecanumVelocityConstraint(maxVel, trackWidth)
+        ));
+    }
+
+    public static TrajectoryAccelerationConstraint getAccelerationConstraint(double maxAccel) {
+        return new ProfileAccelerationConstraint(maxAccel);
+    }
 
     private double clamp(double val, double range) {
         return Range.clip(val, -range, range);

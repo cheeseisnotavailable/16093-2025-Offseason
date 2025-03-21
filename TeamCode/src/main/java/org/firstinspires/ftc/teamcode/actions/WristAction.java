@@ -51,7 +51,7 @@ public class WristAction extends ServoAction {
             case WRIST_RELEASE_TELEOP:
                 return SSValues.WRIST_RELEASE_TELEOP;
             case WRIST_RELEASE_EXTRA:
-                return SSValues.WRIST_ABOVE_SAMPLES;
+                return SSValues.WRIST_RELEASE_EXTRA;
             case WRIST_ABOVE_SAMPLES:
                 return SSValues.WRIST_ABOVE_SAMPLES;
             case WRIST_INTAKE:

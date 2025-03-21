@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.actions.actioncore;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.teamcode.SuperStructure;
 
@@ -75,6 +76,11 @@ public class Action {
             }
             actions.clear();
         }
+    }
+
+    public static void add(Action a){
+        RobotLog.d("----New Action:"+a.toString());
+        actions.add(a);
     }
 
     public static String showCurrentAction(){

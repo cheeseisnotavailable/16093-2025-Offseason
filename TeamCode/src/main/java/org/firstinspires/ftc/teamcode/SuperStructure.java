@@ -15,6 +15,7 @@ import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.references.SSValues;
+import org.firstinspires.ftc.teamcode.util.SimpleLogUtil;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -510,18 +511,20 @@ public class SuperStructure {
 
 
     public boolean colorSensorCovered(){
-        return color.alpha() > 30 && getDistance() < 49;
-//        List<Integer> rgbaValues = getColorRGBAValues();
-//        return Collections.max(rgbaValues)>90;
+        double distance = getDistance();
+        double alpha = color.alpha();
+        SimpleLogUtil.log("------Distance of: "+distance);
+        if(getDistance() < 43){
+            SimpleLogUtil.log("------Alpha of: "+alpha);
+            return alpha > 30;
+        }
+        return false;
     }
 
 //    public double getColorError() {
 //        return colorCalculator.error;
 //    }
 
-    private int redThreshold = 35;
-    private int yellowThreshold = 35;
-    private int blueThreshold = 30;
     private int indexOfMaxRGB = -1;
     private int currentAlpha = -1;
     private int currentRed = -1;
@@ -560,6 +563,7 @@ public class SuperStructure {
     public int alphaAdjustedSampleColor(){
         rgbaValues = getColorRGBAValues(5);//color should not change...?
         if(colorSensorCovered()) {
+            SimpleLogUtil.log("------Sample found with values : "+rgbaValues.toString());
             indexOfMaxRGB = rgbaValues.indexOf(Collections.max(rgbaValues));
             currentRed = rgbaValues.get(0);
             currentGreen = rgbaValues.get(1);
@@ -575,6 +579,7 @@ public class SuperStructure {
                 return -1;
             }
         }
+        SimpleLogUtil.log("------Scanned but no sample detected");
         return -1;
     }
 
