@@ -48,7 +48,7 @@ public abstract class TeleOpMaster extends LinearOpMode {
     private final Telemetry telemetry_M = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
     XCYBoolean resetPos, resetOdo, changeGrab, slideLonger,slideShorter, forceStop, releaseHigh, releaseLow, switchDrive, autoToggleDriveMode, autoGrabSample, timerPast20, timerPast30, getWallSpecimen, absoluteReset
-            , highChamberPlace, highChamberAim, wristHeightSwitch, armDownByPower, manualResetEncoders, goToLastStoredPos, storeThisPos, ascentAim, ascentDown, altWristHeightSwitch, resetArm, manualSlidesBack;
+            , highChamberPlace, highChamberAim, wristHeightSwitch, armDownByPower, manualResetEncoders, goToLastStoredPos, storeThisPos, ascentAim, ascentDown, altWristHeightSwitch, resetArm, manualSlidesBack, altReleaseWrist;
     TimerBoolean touchPressed;
 
     protected void initTeleOp(BooleanSupplier autoGrabCondition, double startingHeading){
@@ -169,6 +169,7 @@ public abstract class TeleOpMaster extends LinearOpMode {
         ascentDown = new XCYBoolean(()->gamepad1.back);
         getWallSpecimen = new XCYBoolean(()->gamepad2.left_trigger>0);
         absoluteReset = new XCYBoolean(()->gamepad1.touchpad);
+        altReleaseWrist = new XCYBoolean(()->gamepad2.touchpad);
 
         openLoopSlideController = ()->gamepad2.right_stick_y;
     }
@@ -524,6 +525,14 @@ public abstract class TeleOpMaster extends LinearOpMode {
                     upper.setWristPos(SSValues.WRIST_INTAKE_SPECIMEN_DONTUSETHIS);
                 } else {
                     upper.setWristPos(SSValues.WRIST_ABOVE_SAMPLES);
+                }
+            }
+
+            if(upper.getSequence() == SuperStructure.Sequences.HIGH_BASKET && altReleaseWrist.toTrue()){
+                if(upper.getWristPosition() != SSValues.WRIST_INTAKE_WALL_SPECIMEN){
+                    upper.setWristPos(SSValues.WRIST_INTAKE_WALL_SPECIMEN);
+                }else{
+                    upper.setWristPos(SSValues.WRIST_RELEASE_TELEOP);
                 }
             }
 

@@ -8,8 +8,9 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 public class AutoBlueBasket extends AutoMaster{
     @Override
     public void runOpMode() throws InterruptedException {
+        //USES RED VALUES
 
-        initAuto(new Pose2d(44, 60, Math.toRadians(-135)));
+        initAuto(new Pose2d(-44, -60, Math.toRadians(55)));
 
         while(opModeInInit()){
 
@@ -18,34 +19,35 @@ public class AutoBlueBasket extends AutoMaster{
         waitForStart();
         setStartTime();
 
-        expFirstPutBlueBasket();
-        expResetAfterBlueBasketAndMoveToIntake(0, 0.5, 0);
+        expFirstPutRedBasket();
+        expResetAfterRedBasketAndMoveToIntake(0, -0.5, 10);
 
         expGetYellowSamples();
 
-        putBlueBasketFromGround(0,0, 0);
-        expResetAfterBlueBasketAndMoveToIntake(7.2, 1.8, 0);
+        putRedBasketFromGround(-2,0, 0);
+        expResetAfterRedBasketAndMoveToIntake(-7.2, -3.4, 10);
 
         expGetYellowSamples();
 
-        putBlueBasketFromGround(0,0, 0);
+        putRedBasketFromGround(0,-1, 0);
 
-        moveAndIntakeLastBasketSampleBlue();
+        moveAndIntakeLastBasketSampleRed();
 
-        putBlueBasketFromGround(-1,0, 0);
+        putRedBasketFromGround(0,-1, 0);
 
 
-        getSamplesFromSubmersibleBlueWithEmergencyAscent(0, 30, 0);
+        getSamplesFromSubmersibleBlueWithEmergencyAscent(0, 15, 0);
 
-        putBlueBasketFromSubmersible(0,1.5, 4);
+        putRedBasketFromSubmersible(0,0, 0);
 
 
         getSamplesFromSubmersibleBlueWithEmergencyAscent(30, -10, -20);
 
-        putBlueBasketFromSubmersible(-2.5,1.5, -4);
+        putRedBasketFromSubmersible(0,0 , 5);
 
 
-        parkToBlueSumbersible();
+        parkToRedSumbersible();
+
 
         while(opModeIsActive()){
             super.update.run();

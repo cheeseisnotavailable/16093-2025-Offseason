@@ -3,7 +3,7 @@ package org.firstinspires.ftc.teamcode.opmodes.auto;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
-@Autonomous
+@Autonomous (name = "AutoChamber")
 public class AutoBlueHP extends AutoMaster{
     @Override
     public void runOpMode() throws InterruptedException {
@@ -35,16 +35,16 @@ public class AutoBlueHP extends AutoMaster{
 
 
         intakeSpecimenFromBlueWall(-6,0);
-        blueChamberPlaceFromWall(12,0);
+        blueChamberPlaceFromWall(7,0);
 
         intakeSpecimenFromBlueWall(-5,-0);
-        blueChamberPlaceFromWall(10,0);
+        blueChamberPlaceFromWall(6,0);
 
         intakeSpecimenFromBlueWall(-5,-0);
-        blueChamberPlaceFromWall(8,0);
+        blueChamberPlaceFromWall(4,0);
 
         intakeSpecimenFromBlueWall(-5,-0.5);
-        blueChamberPlaceFromWall(6.5,0);
+        blueChamberPlaceFromWall(2,0);
 
         parkFromBlueChamber();
 

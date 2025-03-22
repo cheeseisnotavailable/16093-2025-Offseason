@@ -45,7 +45,7 @@ public class SingleTeleOp16093 extends TeleOpMaster {
         highChamberPlace = new XCYBoolean(() -> gamepad1.right_bumper && (upper.getSequence() == SuperStructure.Sequences.HIGH_CHAMBER_AIM || (upper.getSequence() == SuperStructure.Sequences.HIGH_CHAMBER_PLACE)));
         highChamberAim = new XCYBoolean(() -> gamepad1.left_bumper && upper.getSequence() == SuperStructure.Sequences.RUN || upper.getSequence() == SuperStructure.Sequences.HIGH_CHAMBER_PLACE);
         wristHeightSwitch = new XCYBoolean(() -> gamepad1.right_stick_button);
-        altWristHeightSwitch = new XCYBoolean(() -> gamepad1.left_trigger > 0);
+        altWristHeightSwitch = new XCYBoolean(() -> gamepad1.left_trigger > 30);
         armDownByPower = new XCYBoolean(() -> gamepad1.options && !(gamepad1.back));
         manualSlidesBack = new XCYBoolean(()->gamepad1.back && !gamepad1.options);
         manualResetEncoders = new XCYBoolean(() -> gamepad1.back && gamepad1.options);
@@ -56,6 +56,7 @@ public class SingleTeleOp16093 extends TeleOpMaster {
         ascentAim = new XCYBoolean(()-> gamepad1.b && gamepad1.a);
         openLoopSlideController = () -> gamepad1.right_stick_y;
         absoluteReset = new XCYBoolean(() -> gamepad1.touchpad);
+        altReleaseWrist = new XCYBoolean(()->gamepad1.left_trigger > 0 && upper.getSequence() == SuperStructure.Sequences.HIGH_BASKET);
 
 
 //        }

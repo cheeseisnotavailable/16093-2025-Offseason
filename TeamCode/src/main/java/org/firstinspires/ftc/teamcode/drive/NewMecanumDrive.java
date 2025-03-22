@@ -15,8 +15,10 @@ import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.control.PIDCoefficients;
+import com.acmerobotics.roadrunner.control.PIDFController;
 import com.acmerobotics.roadrunner.drive.DriveSignal;
 import com.acmerobotics.roadrunner.drive.MecanumDrive;
+import com.acmerobotics.roadrunner.followers.HolonomicPIDVAFollower;
 import com.acmerobotics.roadrunner.followers.TrajectoryFollower;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
@@ -59,8 +61,8 @@ import XCYOS.Task;
  */
 @Config
 public class NewMecanumDrive extends MecanumDrive {
-    public static PIDCoefficients TRANS_PID = new PIDCoefficients(10.4, 0, 0);
-    public static PIDCoefficients HEADING_PID = new PIDCoefficients(2.1, 0, 0); //i = 0
+    public static PIDCoefficients TRANS_PID = new PIDCoefficients(10, 0, 0);
+    public static PIDCoefficients HEADING_PID = new PIDCoefficients(8, 0.001, 1);
 
     public static double LATERAL_MULTIPLIER = 1;
 
@@ -109,7 +111,7 @@ public class NewMecanumDrive extends MecanumDrive {
     public NewMecanumDrive(HardwareMap hardwareMap) {
         super(kV, kA, kStatic, TRACK_WIDTH, TRACK_WIDTH, LATERAL_MULTIPLIER);
 
-        follower = new SQPIDHolonomicFollower(TRANS_PID, TRANS_PID, HEADING_PID,
+        follower = new HolonomicPIDVAFollower(TRANS_PID, TRANS_PID, HEADING_PID,
                 new Pose2d(0.5, 0.5, Math.toRadians(5.0)), 0.5);
 
         LynxModuleUtil.ensureMinimumFirmwareVersion(hardwareMap);
@@ -275,22 +277,22 @@ public class NewMecanumDrive extends MecanumDrive {
         return trajectorySequenceRunner.isBusy();
     }
 
-    public static PIDCoefficients translationXPid = new PIDCoefficients(0.18, 0.000, 0.006);
-    public static PIDCoefficients translationYPid = new PIDCoefficients(0.2, 0.000, 0.01);
-    public static PIDCoefficients headingPid = new PIDCoefficients(0.43, 0, 0.09);
+    public static PIDCoefficients translationXPid = new PIDCoefficients(0.1298, 0, 0.0094);
+    public static PIDCoefficients translationYPid = new PIDCoefficients(0.083, 0, 0.0116);
+    public static PIDCoefficients headingPid = new PIDCoefficients(0.76, 0.00002, 0.045);
 
-    private SQPIDController transPID_x;
-    private SQPIDController transPID_y;
-    private SQPIDController turnPID;
+    private PIDFController transPID_x;
+    private PIDFController transPID_y;
+    private PIDFController turnPID;
 
 
-    public static PIDCoefficients altXPid = new PIDCoefficients(0.30, 0.000, 0.01);
-    public static PIDCoefficients altYPid = new PIDCoefficients(0.22, 0.000, 0.009);
-    public static PIDCoefficients altHeadingPid = new PIDCoefficients(0.2, 0, 0.2);
+    public static PIDCoefficients altXPid = new PIDCoefficients(0.1298, 0, 0.0094);
+    public static PIDCoefficients altYPid = new PIDCoefficients(0.083, 0, 0.0116);
+    public static PIDCoefficients altHeadingPid = new PIDCoefficients(0.76, 0, 0.1);
 
-    private SQPIDController altTransPID_x;
-    private SQPIDController altTransPID_y;
-    private SQPIDController altTurnPID;
+    private PIDFController altTransPID_x;
+    private PIDFController altTransPID_y;
+    private PIDFController altTurnPID;
 
 
     private double moveHeading = 0;
@@ -319,25 +321,25 @@ public class NewMecanumDrive extends MecanumDrive {
     public void initSimpleMove(Pose2d pos) {
         stopTrajectory();
         simpleMoveIsActivate = true;
-        transPID_x = new SQPIDController(translationXPid);
-        transPID_x.setSetpoint(pos.getX());
+        transPID_x = new PIDFController(translationXPid);
+        transPID_x.setTargetPosition(pos.getX());
 
-        transPID_y = new SQPIDController(translationYPid);
-        transPID_y.setSetpoint(pos.getY());
+        transPID_y = new PIDFController(translationYPid);
+        transPID_y.setTargetPosition(pos.getY());
 
-        turnPID = new SQPIDController(headingPid);
+        turnPID = new PIDFController(headingPid);
         moveHeading = pos.getHeading();
-        turnPID.setSetpoint(0);
+        turnPID.setTargetPosition(0);
 
-        altTransPID_x = new SQPIDController(altXPid);
-        altTransPID_x.setSetpoint(pos.getX());
+        altTransPID_x = new PIDFController(altXPid);
+        altTransPID_x.setTargetPosition(pos.getX());
 
-        altTransPID_y = new SQPIDController(altYPid);
-        altTransPID_y.setSetpoint(pos.getY());
+        altTransPID_y = new PIDFController(altYPid);
+        altTransPID_y.setTargetPosition(pos.getY());
 
-        altTurnPID = new SQPIDController(altHeadingPid);
+        altTurnPID = new PIDFController(altHeadingPid);
         moveHeading = pos.getHeading();
-        altTurnPID.setSetpoint(0);
+        altTurnPID.setTargetPosition(0);
     }
 
     public void moveTo(Pose2d endPose, int correctTime_ms) {
@@ -372,7 +374,7 @@ public class NewMecanumDrive extends MecanumDrive {
 
 
     public Pose2d getSimpleMovePosition() {
-        return new Pose2d(transPID_x.getSetpoint(), transPID_y.getSetpoint(), moveHeading);
+        return new Pose2d(transPID_x.getTargetPosition(), transPID_y.getTargetPosition(), moveHeading);
     }
 
     public Task simpleMoveTime(Pose2d pose, int time, double power, double toleranceRate) {
@@ -457,15 +459,15 @@ public class NewMecanumDrive extends MecanumDrive {
         Pose2d current_pos = getPoseEstimate();
         if(switchDrive){
             this.setGlobalPower(new Pose2d(
-                    clamp(altTransPID_x.calculate(current_pos.getX()), simpleMovePower),
-                    clamp(altTransPID_y.calculate(current_pos.getY()), simpleMovePower),
-                    clamp(altTurnPID.calculate(AngleUnit.normalizeRadians(current_pos.getHeading() - moveHeading)), simpleMovePower)
+                    clamp(altTransPID_x.update(current_pos.getX()), simpleMovePower),
+                    clamp(altTransPID_y.update(current_pos.getY()), simpleMovePower),
+                    clamp(altTurnPID.update(AngleUnit.normalizeRadians(current_pos.getHeading() - moveHeading)), simpleMovePower)
             ), 0, 0);
         }else{
             this.setGlobalPower(new Pose2d(
-                    clamp(transPID_x.calculate(current_pos.getX()), simpleMovePower),
-                    clamp(transPID_y.calculate(current_pos.getY()), simpleMovePower),
-                    clamp(turnPID.calculate(AngleUnit.normalizeRadians(current_pos.getHeading() - moveHeading)), simpleMovePower)
+                    clamp(transPID_x.update(current_pos.getX()), simpleMovePower),
+                    clamp(transPID_y.update(current_pos.getY()), simpleMovePower),
+                    clamp(turnPID.update(AngleUnit.normalizeRadians(current_pos.getHeading() - moveHeading)), simpleMovePower)
             ), 0, 0);
         }
     }

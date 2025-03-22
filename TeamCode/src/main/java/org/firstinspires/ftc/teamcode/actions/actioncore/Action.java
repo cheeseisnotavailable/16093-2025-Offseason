@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.teamcode.SuperStructure;
+import org.firstinspires.ftc.teamcode.util.SimpleLogUtil;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -79,7 +80,7 @@ public class Action {
     }
 
     public static void add(Action a){
-        RobotLog.d("----New Action:"+a.toString());
+        SimpleLogUtil.log("----New Action:"+a.toString());
         actions.add(a);
     }
 
