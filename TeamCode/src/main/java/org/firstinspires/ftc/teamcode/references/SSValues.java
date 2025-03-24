@@ -29,7 +29,7 @@ public class SSValues {
     public static int SLIDE_LOW_BASKET = (int)(slideMaxValue *0.4);
 
     public static int SLIDE_INTAKE_NEAR = (int)(slideMaxValue *0.0955);
-    public static int SLIDE_INTAKE_WALL_SPECIMEN = (int)(slideMaxValue *0.25);
+    public static int SLIDE_INTAKE_WALL_SPECIMEN = (int)(slideMaxValue *0.13);
     public static int SLIDE_AUTO_INTAKE_LAST_BLUE = (int)(slideMaxValue *0.54);
     public static int SLIDE_AUTO_INTAKE_LAST_RED = (int)(slideMaxValue *0.50);
     public static int SLIDE_AUTO_INTAKE_FIRST= (int)(slideMaxValue *0.5538);
@@ -42,7 +42,7 @@ public class SSValues {
     public static int SLIDE_HIGH_CHAMBER_PLACE_AUTO = (int)(slideMaxValue *0.56);
     public static int SLIDE_ASCENT_UP = (int)(slideMaxValue *0.8578);
     public static int SLIDE_ASCENT_DOWN = (int)(slideMaxValue *0.3);
-    public static int SLIDE_MAX = slideMaxValue;
+    public static int SLIDE_MAX = slideMaxValue-50;
 
     public static double WRIST_DEFAULT = 1;
 

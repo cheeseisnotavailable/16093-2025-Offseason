@@ -23,7 +23,7 @@ public class AutoRedBasket extends AutoMaster{
         expGetYellowSamples();
 
         putRedBasketFromGround(-2,0, 0);
-        expResetAfterRedBasketAndMoveToIntake(-7.2, -3.4, 10);
+        expResetAfterRedBasketAndMoveToIntake(-7.2, -4.5, 10);
 
         expGetYellowSamples();
 
@@ -34,12 +34,12 @@ public class AutoRedBasket extends AutoMaster{
         putRedBasketFromGround(0,-1, 0);
 
 
-        getSamplesFromSubmersibleRedWithEmergencyAscent(0, 15, 0);
+        getSamplesFromSubmersibleRedWithEmergencyAscent(0, 15);
 
         putRedBasketFromSubmersible(0,0, 0);
 
 
-        getSamplesFromSubmersibleRedWithEmergencyAscent(30, -10, -20);
+        getSamplesFromSubmersibleRedWithEmergencyAscent(30, -10);
 
         putRedBasketFromSubmersible(0,0 , 5);
 

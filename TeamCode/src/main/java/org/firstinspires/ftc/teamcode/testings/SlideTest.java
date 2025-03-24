@@ -17,6 +17,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 
 @TeleOp (group = "Testing", name = "Slide Test")
 @Config
+@Disabled
 
 public class SlideTest extends LinearOpMode {
 

@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.testings;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
@@ -7,6 +8,7 @@ import org.firstinspires.ftc.teamcode.SuperStructure;
 import org.firstinspires.ftc.teamcode.drive.NewMecanumDrive;
 import org.firstinspires.ftc.teamcode.references.SSValues;
 
+@Disabled
 @TeleOp(name="color sensor test", group="Testing")
 public class ColorSensorTest extends LinearOpMode {
     SuperStructure upper;

@@ -34,19 +34,22 @@ public class AutoBlueHP extends AutoMaster{
 
 
 
-        intakeSpecimenFromBlueWall(-6,0);
+        intakeSpecimenFromBlueWall(0,0);
+        blueChamberPlaceFromWall(9,-0.4);
+
+        intakeSpecimenFromBlueWall(0,0);
         blueChamberPlaceFromWall(7,0);
 
-        intakeSpecimenFromBlueWall(-5,-0);
-        blueChamberPlaceFromWall(6,0);
+        intakeSpecimenFromBlueWall(0,-0);
+        blueChamberPlaceFromWall(5,0);
 
-        intakeSpecimenFromBlueWall(-5,-0);
-        blueChamberPlaceFromWall(4,0);
+        intakeSpecimenFromBlueWall(0,-0);
+        blueChamberPlaceFromWall(3,0);
 
-        intakeSpecimenFromBlueWall(-5,-0.5);
-        blueChamberPlaceFromWall(2,0);
+//        parkFromBlueChamber();
+        intakeSpecimenFromBlueWall(0,-0);
+        blueChamberPlaceFromWall(1,0);
 
-        parkFromBlueChamber();
 
         while(opModeIsActive()){
             super.update.run();

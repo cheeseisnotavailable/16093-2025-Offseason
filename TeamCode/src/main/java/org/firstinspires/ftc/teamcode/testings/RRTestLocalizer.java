@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.testings;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -16,6 +17,7 @@ import org.firstinspires.ftc.teamcode.drive.NewMecanumDrive;
  * encoder localizer heading may be significantly off if the track width has not been tuned).
  */
 @Config
+@Disabled
 @TeleOp(group = "drive")
 public class RRTestLocalizer extends LinearOpMode {
     public static double x = -15, y = 62.3, heading = 0;

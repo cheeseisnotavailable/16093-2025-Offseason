@@ -7,7 +7,6 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.opmodes.auto.AutoMaster;
 
 @TeleOp (group = "Testing")
-@Disabled
 public class TestAutoPIDWithSuperstructure extends AutoMaster {
     @Override
     public void runOpMode() throws InterruptedException {

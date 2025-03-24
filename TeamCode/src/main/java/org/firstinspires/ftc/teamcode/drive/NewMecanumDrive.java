@@ -286,9 +286,9 @@ public class NewMecanumDrive extends MecanumDrive {
     private PIDFController turnPID;
 
 
-    public static PIDCoefficients altXPid = new PIDCoefficients(0.1298, 0, 0.0094);
+    public static PIDCoefficients altXPid = new PIDCoefficients(0.1298, 0, 0.02);
     public static PIDCoefficients altYPid = new PIDCoefficients(0.083, 0, 0.0116);
-    public static PIDCoefficients altHeadingPid = new PIDCoefficients(0.76, 0, 0.1);
+    public static PIDCoefficients altHeadingPid = new PIDCoefficients(0.76, 0.00002, 0.045);
 
     private PIDFController altTransPID_x;
     private PIDFController altTransPID_y;

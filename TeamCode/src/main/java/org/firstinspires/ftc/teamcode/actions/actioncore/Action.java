@@ -1,13 +1,9 @@
 package org.firstinspires.ftc.teamcode.actions.actioncore;
 
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.util.RobotLog;
-
 import org.firstinspires.ftc.teamcode.SuperStructure;
-import org.firstinspires.ftc.teamcode.util.SimpleLogUtil;
+import org.firstinspires.ftc.teamcode.util.CentralLogController;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.function.BooleanSupplier;
 
 public class Action {
@@ -80,7 +76,7 @@ public class Action {
     }
 
     public static void add(Action a){
-        SimpleLogUtil.log("----New Action:"+a.toString());
+        CentralLogController.log("----New Action:"+a.toString());
         actions.add(a);
     }
 
