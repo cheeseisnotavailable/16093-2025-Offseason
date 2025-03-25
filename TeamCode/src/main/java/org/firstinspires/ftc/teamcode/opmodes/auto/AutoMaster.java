@@ -380,8 +380,8 @@ public abstract class AutoMaster extends LinearOpMode {
         upper.setGrabPos(SSValues.GRAB_DEFAULT);
         Action.add(new SlideAction(upper, SlideAction.slideState.SLIDE_MIN, 300));
         Action.add(new WristAction(upper, WristAction.wristState.WRIST_DEFAULT));
-        Action.add(new ArmAction(upper, ArmAction.armState.ARM_GET_WALL_SPECIMEN,400));
-        drive.moveTo(new Pose2d(-39.5+xOffset,51.2+yOffset,Math.toRadians(90)), 10, ()->Action.buildSequence(update));
+        Action.add(new ArmAction(upper, ArmAction.armState.ARM_GET_WALL_SPECIMEN,800));
+        drive.moveTo(new Pose2d(-37.5+xOffset,51.5+yOffset,Math.toRadians(90)), 10, ()->Action.buildSequence(update));
         Action.add(new WristAction(upper, WristAction.wristState.WRIST_INTAKE_WALL_SPECIMEN));
         Action.add(new GrabAction(upper, GrabAction.grabState.GRAB_DEFAULT));
         Action.add(new SlideAction(upper,SlideAction.slideState.SLIDE_INTAKE_WALL_SPECIMEN,10));
@@ -742,7 +742,7 @@ public abstract class AutoMaster extends LinearOpMode {
                 new Pose2d(-36, 40, Math.toRadians(90)),
                 new Pose2d(-36, 15, Math.toRadians(90)),
                 new Pose2d(-46, 17, Math.toRadians(90)));
-        drive.moveWithDrift(
+        drive.moveTo(
                 new Pose2d(-46, 49, Math.toRadians(90)),
                 new Pose2d(-46, 17, Math.toRadians(90)),
                 new Pose2d(-54, 17, Math.toRadians(90)),

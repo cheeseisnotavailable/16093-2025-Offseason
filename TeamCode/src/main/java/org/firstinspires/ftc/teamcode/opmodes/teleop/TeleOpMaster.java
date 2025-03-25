@@ -127,7 +127,7 @@ public abstract class TeleOpMaster extends LinearOpMode {
         // =====Initial setup for upper mechanisms to default positions=====
 
 
-        upper.resetSlide();
+//        upper.resetSlide();
         upper.setGrabPos(SSValues.GRAB_CLOSED);
 //        upper.setWristPos(SSValues.WRIST_DEFAULT);
         upper.setAscentState(SuperStructure.AscentState.ASCENT_DOWN);

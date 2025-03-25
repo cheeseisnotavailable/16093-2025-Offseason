@@ -34,7 +34,7 @@ public class AutoBlueHP extends AutoMaster{
 
 
 
-        intakeSpecimenFromBlueWall(0,1);
+        intakeSpecimenFromBlueWall(-10,1);
         blueChamberPlaceFromWall(8,-0.4);
 
         intakeSpecimenFromBlueWall(0,0);
