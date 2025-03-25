@@ -34,17 +34,17 @@ public class AutoBlueHP extends AutoMaster{
 
 
 
-        intakeSpecimenFromBlueWall(0,0);
-        blueChamberPlaceFromWall(9,-0.4);
+        intakeSpecimenFromBlueWall(0,1);
+        blueChamberPlaceFromWall(8,-0.4);
 
         intakeSpecimenFromBlueWall(0,0);
-        blueChamberPlaceFromWall(7,0);
+        blueChamberPlaceFromWall(6,0);
 
         intakeSpecimenFromBlueWall(0,-0);
-        blueChamberPlaceFromWall(5,0);
+        blueChamberPlaceFromWall(4,0);
 
         intakeSpecimenFromBlueWall(0,-0);
-        blueChamberPlaceFromWall(3,0);
+        blueChamberPlaceFromWall(2,0);
 
 //        parkFromBlueChamber();
         intakeSpecimenFromBlueWall(0,-0);
