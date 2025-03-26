@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.SuperStructure;
+import org.firstinspires.ftc.teamcode.actions.IntakeAction;
 import org.firstinspires.ftc.teamcode.actions.actioncore.Action;
 import org.firstinspires.ftc.teamcode.actions.ArmAction;
 import org.firstinspires.ftc.teamcode.actions.AscentAction;
@@ -16,6 +17,8 @@ import org.firstinspires.ftc.teamcode.actions.GrabAction;
 import org.firstinspires.ftc.teamcode.actions.SlideAction;
 import org.firstinspires.ftc.teamcode.actions.TailAction;
 import org.firstinspires.ftc.teamcode.actions.WristAction;
+import org.firstinspires.ftc.teamcode.actions.actioncore.CustomWaitAction;
+import org.firstinspires.ftc.teamcode.actions.actioncore.FinishConditionActionGroup;
 import org.firstinspires.ftc.teamcode.actions.actioncore.WaitAction;
 import org.firstinspires.ftc.teamcode.drive.NewMecanumDrive;
 import org.firstinspires.ftc.teamcode.references.ConditionalXCYBoolean;
@@ -121,7 +124,7 @@ public abstract class TeleOpMaster extends LinearOpMode {
 
         // Initialize and set up mecanum drive, starting position at (0,0,0)
         drive.setUpdateRunnable(update);
-        drive.setPoseEstimate(new Pose2d(0, 0, Math.toRadians(startingHeading)));
+        drive.setPoseEstimate(new Pose2d(-37, 54.5, Math.toRadians(startingHeading)));
         drive.updatePoseEstimate();
 
         // =====Initial setup for upper mechanisms to default positions=====
@@ -564,6 +567,134 @@ public abstract class TeleOpMaster extends LinearOpMode {
         }
     }
 
+    //AAAAAAAAAAAAA
+    protected void scorePresetSamples(){
+
+        upper.setGrabPos(SSValues.GRAB_CLOSED);
+        delay(10);
+        upper.setWristPos(SSValues.WRIST_DEFAULT);
+
+        driveMode = 2;
+
+        Pose2d blueBasket = new Pose2d(52.7, 51.3, Math.toRadians(-120));
+        drive.setSimpleMovePower(0.7);
+
+        upper.switchSequence(SuperStructure.Sequences.HIGH_BASKET);
+        Action.add(new SlideAction(upper, SlideAction.slideState.SLIDE_MIN, 400));
+        Action.add(new WaitAction(1200));
+        Action.add(new ArmAction(upper, ArmAction.armState.ARM_UP, 900));
+        Action.add(new WristAction(upper, WristAction.wristState.WRIST_INTAKE));
+        Action.add(new ArmAction(upper, ArmAction.armState.ARM_UP, (int)(SSValues.ARM_UP*0.3)));
+        Action.add(new SlideAction(upper, SlideAction.slideState.SLIDE_MAX, SSValues.SLIDE_MAX));
+        Action.add(new CustomWaitAction(()->drive.setSimpleMovePower(0.4),0));
+        drive.setSimpleMoveTolerance(1.5, 1.5, Math.toRadians(7));
+        drive.moveTo(blueBasket, 50, ()->Action.buildSequence(update));
+        Action.add(new WristAction(upper, WristAction.wristState.WRIST_RELEASE_EXTRA,340));
+        Action.add(new IntakeAction(upper, IntakeAction.intakeState.CONTINUOUS_SPIN_OPPOSITE));
+        Action.add(new GrabAction(upper, GrabAction.grabState.GRAB_OPEN));
+        Action.buildSequence(update);
+        delay(100);
+        upper.setIntake(SSValues.CONTINUOUS_STOP);
+
+        resetAfterBlueBasketAndMoveToIntake(0, 0.5, 10);
+        expGetYellowSamples();
+
+        putBlueBaksetFromGround(2,0, 0);
+        resetAfterBlueBasketAndMoveToIntake(7.2, 3.4, 10);
+
+        expGetYellowSamples();
+        putBlueBaksetFromGround(0,1, 0);
+
+        moveAndIntakeLastBasketSampleBlue();
+        putBlueBaksetFromGround(0,1, 0);
+
+        driveMode = 0;
+    }
+
+    private Pose2d yellowPose;
+    private void resetAfterBlueBasketAndMoveToIntake(double xOffset, double yOffset, double headingOffset){
+        yellowPose = new Pose2d(46+xOffset, 47.6+yOffset, Math.toRadians(-90+headingOffset));
+        upper.switchSequence(SuperStructure.Sequences.RUN);
+        drive.setSimpleMoveTolerance(0.8,1, Math.toRadians(5));
+        drive.setSimpleMovePower(0.7);
+
+        Action.add(new WristAction(upper, WristAction.wristState.WRIST_INTAKE, 50));
+        Action.add(new SlideAction(upper, SlideAction.slideState.SLIDE_MIN, (int)(SSValues.SLIDE_MAX*0.75)));
+        Action.add(new ArmAction(upper, ArmAction.armState.ARM_DOWN, 200));
+        drive.moveTo(yellowPose, 110, ()->Action.buildSequence(update));
+    }
+
+    private Pose2d lastBlueBasketSample = new Pose2d(52.8,46.0,Math.toRadians(-49));
+    private void moveAndIntakeLastBasketSampleBlue(){
+        drive.setSimpleMoveTolerance(1,1,Math.toRadians(5));
+        drive.setSimpleMovePower(0.3);
+        upper.setGrabPos(SSValues.GRAB_DEFAULT);
+        Action.add(new WristAction(upper, WristAction.wristState.WRIST_INTAKE, 50));
+        Action.add(new SlideAction(upper, SlideAction.slideState.SLIDE_MIN, 950));
+        Action.add(new ArmAction(upper, ArmAction.armState.ARM_DOWN, 200));
+//        moveToGetLastYellowSample();
+        drive.moveTo(lastBlueBasketSample, 150, ()->Action.buildSequence(update));
+        upper.setIntake(SSValues.CONTINUOUS_SPIN);
+        upper.switchSequence(SuperStructure.Sequences.INTAKE_NEAR);
+        Action.add(new FinishConditionActionGroup(new SlideAction(upper, SlideAction.slideState.SLIDE_AUTO_INTAKE_LAST_BLUE,20,0.5),
+                ()->upper.colorSensorCovered(),
+                ()->{upper.setIntake(SSValues.CONTINUOUS_STOP);
+                    delay(50);
+                    upper.setGrabPos(SSValues.GRAB_CLOSED);
+                    delay(50);},
+                ()->{upper.setIntake(SSValues.CONTINUOUS_STOP);
+                    upper.setGrabPos(SSValues.GRAB_CLOSED);}));
+        Action.add(new SlideAction(upper, SlideAction.slideState.SLIDE_MIN, 500));
+        Action.buildSequence(update);
+        upper.setIntake(SSValues.CONTINUOUS_STOP);
+
+    }
+    private void putBlueBaksetFromGround(double xOffset, double yOffset, double simpleMovePowerChange){
+        Pose2d blueBasket = new Pose2d(50+xOffset, 57.4+yOffset, Math.toRadians(-120));
+        upper.switchSequence(SuperStructure.Sequences.HIGH_BASKET);
+        drive.setSimpleMoveTolerance(3, 3, Math.toRadians(5));
+        drive.setSimpleMovePower(0.3 + simpleMovePowerChange);
+        upper.setWristPos(SSValues.WRIST_INTAKE);
+        Action.add(new ArmAction(upper, ArmAction.armState.ARM_UP, 800));
+        Action.add(new SlideAction(upper, SlideAction.slideState.SLIDE_MAX, 100));
+        Action.add(new WristAction(upper, WristAction.wristState.WRIST_RELEASE_AUTO,340));
+        drive.moveTo(blueBasket, 270,()->Action.buildSequence(update));
+//        upper.setIntake(SSValues.CONTINUOUS_SPIN_OPPOSITE);
+        Action.add(new IntakeAction(upper, IntakeAction.intakeState.CONTINUOUS_SPIN_OPPOSITE, 20));
+        Action.add(new GrabAction(upper, GrabAction.grabState.GRAB_OPEN));
+        Action.buildSequence(update);
+        sleep(150);
+        upper.setIntake(SSValues.CONTINUOUS_STOP);
+    }
+
+    private void expGetYellowSamples(){
+        drive.setSimpleMoveTolerance(2,2,Math.toRadians(3));
+        drive.setSimpleMovePower(0.65);
+        upper.switchSequence(SuperStructure.Sequences.INTAKE_FAR);
+        upper.setGrabPos(SSValues.GRAB_DEFAULT);
+        upper.setIntake(SSValues.CONTINUOUS_SPIN);
+        Action.add(new WristAction(upper, WristAction.wristState.WRIST_INTAKE,0));
+        Action.add(new FinishConditionActionGroup(new SlideAction(upper, SlideAction.slideState.SLIDE_AUTO_INTAKE_YELLOW,20,0.35),
+                ()->upper.colorSensorCovered(),
+                ()->{upper.setIntake(SSValues.CONTINUOUS_STOP);
+                    delay(50);
+                    upper.setGrabPos(SSValues.GRAB_CLOSED);
+                    delay(50);},
+                ()->{upper.setIntake(SSValues.CONTINUOUS_STOP);
+                    delay(50);
+                    upper.setGrabPos(SSValues.GRAB_CLOSED);
+                    delay(50);}));
+        Action.buildSequence(update);
+        upper.setIntake(SSValues.CONTINUOUS_STOP);
+        upper.setGrabPos(SSValues.GRAB_CLOSED);
+        Action.add(new SlideAction(upper, SlideAction.slideState.SLIDE_MIN, 300));
+        Action.buildSequence(update);
+    }
+
+
+
+
+
     private void drive_period() {
         if (upper != null) {
             if (driveMode == 0) {
@@ -633,6 +764,14 @@ public abstract class TeleOpMaster extends LinearOpMode {
 //        telemetry_M.update();
         for (LynxModule module : allHubs) {
             module.clearBulkCache();
+        }
+    }
+
+
+    protected void delay(int millisecond) {
+        long end = System.currentTimeMillis() + millisecond;
+        while (opModeIsActive() && end > System.currentTimeMillis() && update!=null) {
+            update.run();
         }
     }
 }

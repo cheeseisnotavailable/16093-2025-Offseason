@@ -310,7 +310,7 @@ public abstract class AutoMaster extends LinearOpMode {
         drive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         drive.moveTo(new Pose2d(-10+xOffset, 42+yOffset, Math.toRadians(90)),0,()->{Action.buildSequence(update);}); //42
         drive.setSimpleMovePower(0.7);
-        drive.moveTo(new Pose2d(-10+xOffset, 34.3+yOffset, Math.toRadians(90)),10);
+        drive.moveTo(new Pose2d(-10+xOffset, 34+yOffset, Math.toRadians(90)),10);
         drive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         Action.add(new SlideAction(upper, SlideAction.slideState.SLIDE_HIGH_CHAMBER_PLACE_AUTO,130));
@@ -381,7 +381,7 @@ public abstract class AutoMaster extends LinearOpMode {
         Action.add(new SlideAction(upper, SlideAction.slideState.SLIDE_MIN, 300));
         Action.add(new WristAction(upper, WristAction.wristState.WRIST_DEFAULT));
         Action.add(new ArmAction(upper, ArmAction.armState.ARM_GET_WALL_SPECIMEN,800));
-        drive.moveTo(new Pose2d(-37.5+xOffset,51.5+yOffset,Math.toRadians(90)), 10, ()->Action.buildSequence(update));
+        drive.moveTo(new Pose2d(-37.5+xOffset,51.5+yOffset,Math.toRadians(90)), 20, ()->Action.buildSequence(update));
         Action.add(new WristAction(upper, WristAction.wristState.WRIST_INTAKE_WALL_SPECIMEN));
         Action.add(new GrabAction(upper, GrabAction.grabState.GRAB_DEFAULT));
         Action.add(new SlideAction(upper,SlideAction.slideState.SLIDE_INTAKE_WALL_SPECIMEN,10));
